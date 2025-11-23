@@ -1,43 +1,71 @@
-import { IBuyer, ValidationErrors } from "../../types";
+import { IBuyer, TPayment, ValidationErrors } from "../../types";
+
+
 /**
  * Модель для работы с данными покупателя
+ * Обеспечивает хранение, установку, получение и валидацию данных покупателя
  */
 export class BuyerModel {
-  private data: Partial<IBuyer> = {};
+  private data: IBuyer;
 
   /**
-   * Создает экземпляр модели покупателя
-   * @param initialData - данные покупателя
-   * Передать часть полей
-   * @example
-   * new CustomerModel({ email: 'test@mail.ru', phone: '+79999999999' })
+   * Создаёт экземпляр модели покупателя
+   * Изначально способ оплаты не выбран (`not_selected`)
    */
-  constructor(initialData?: Partial<IBuyer>) {
-    if (initialData) {
-      this.data = { ...initialData };
-    }
+  constructor() {
+    this.data = {
+      payment: 'not_selected',
+      email: '',
+      phone: '',
+      address: ''
+    };
   }
 
-  setData(data: Partial<IBuyer>): void {
+  /**
+   * Устанавливает данные покупателя
+   * @param data - полный объект IBuyer с заполненными полями
+   * @throws {Error} Если data не является объектом или отсутствуют обязательные поля
+   */
+  setData(data: IBuyer): void {
     if (!data || typeof data !== "object") {
       throw new Error("Не объект");
     }
-    this.data = { ...this.data, ...data };
+
+    // Проверяем обязательные строковые поля
+    if (!data.email) {
+      throw new Error("Email обязателен для заполнения");
+    }
+    if (!data.phone) {
+      throw new Error("Телефон обязателен для заполнения");
+    }
+    if (!data.address) {
+      throw new Error("Адрес обязателен для заполнения");
+    }
+
+    // payment должен быть одним из допустимых значений TPayment
+    if (!['cash', 'card', 'not_selected'].includes(data.payment)) {
+      throw new Error("Недопустимое значение payment");
+    }
+
+    this.data = data;
   }
 
-  getData(): Partial<IBuyer> {
-    return { ...this.data };
+  /**
+   * Возвращает текущие данные покупателя
+   * @returns {IBuyer} Полный объект с данными покупателя
+   */
+  getData(): IBuyer {
+    return this.data;
   }
 
   /**
    * Валидирует данные покупателя
-   * @returns ошибками валидации
-   * Если поле валидно, оно отсутствует в объекте
+   * @returns {ValidationErrors} Объект с сообщениями об ошибках (пустой, если всё валидно)
    */
   validate(): ValidationErrors {
     const errors: ValidationErrors = {};
 
-    if (!this.data.payment) {
+    if (this.data.payment === 'not_selected') {
       errors.payment = "Не выбран вид оплаты";
     }
 
@@ -55,8 +83,17 @@ export class BuyerModel {
 
     return errors;
   }
-  
+
+  /**
+   * Очищает все данные покупателя
+   * Устанавливает payment в 'not_selected', остальные поля — в пустые строки
+   */
   clear(): void {
-    this.data = {};
+    this.data = {
+      payment: 'not_selected',
+      email: '',
+      phone: '',
+      address: ''
+    };
   }
 }

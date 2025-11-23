@@ -12,48 +12,40 @@ export class ProductsModel {
     if (!Array.isArray(items)) {
       throw new Error("Не массив");
     }
-
-    this.items = [...items];
+    this.items = items;
     this.selectedItem = undefined;
   }
 
   getItems(): IProduct[] {
-    return [...this.items];
+    return this.items;
   }
 
   /**
-  * @param id - уникальный идентификатор товара
- * @returns копию объекта товара или undefined если не найден
- */
-
+   * @param id - уникальный идентификатор товара
+   * @returns объект товара или undefined, если не найден
+   */
   getProductById(id: string): IProduct | undefined {
     if (!id || typeof id !== "string") {
-      throw new Error("ID товара неккоректно, либо оно отстутсвует");
+      throw new Error("ID товара некорректно, либо оно отсутствует");
     }
-
-    const product = this.items.find((item) => item.id === id);
-
-    return product ? { ...product } : undefined;
+    return this.items.find((item) => item.id === id);
   }
 
   getSelectedItem(): IProduct | undefined {
-    return this.selectedItem ? { ...this.selectedItem } : undefined;
+    return this.selectedItem;
   }
 
   /**
-  * @param item - товар для отображения или null для сброса выбора
- */
-
+   * @param item - товар для отображения или null для сброса выбора
+   */
   setSelectedItem(item: IProduct | null): void {
-  if (item === null) {
-    this.selectedItem = undefined;
-    return;
+    if (item === null) {
+      this.selectedItem = undefined;
+      return;
+    }
+    if (!item || typeof item !== 'object') {
+      throw new Error('Не валидный объект');
+    }
+    this.selectedItem = item;
   }
-  
-  if (!item || typeof item !== 'object') {
-    throw new Error('Не валидный обьект');
-  }
-  
-  this.selectedItem = { ...item };
-}
 }
