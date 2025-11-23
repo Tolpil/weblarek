@@ -22,3 +22,19 @@ export interface IBuyer {
   phone: string;
   address: string;
 }
+
+export interface IOrderData {
+  payment: TPayment;
+  email: string;
+  phone: string;
+  address: string;
+  total: number;
+  items: string[];
+}
+
+export interface IOrderResult {
+  id: string;
+  total: number;
+}
+
+export type ValidationErrors = Partial<Record<keyof IBuyer, string>>;
