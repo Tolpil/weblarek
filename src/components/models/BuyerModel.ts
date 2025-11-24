@@ -22,32 +22,38 @@ export class BuyerModel {
   }
 
   /**
-   * Устанавливает данные покупателя
-   * @param data - полный объект IBuyer с заполненными полями
-   * @throws {Error} Если data не является объектом или отсутствуют обязательные поля
+   * Устанавливает данные покупателя (частично или полностью)
+   * @param data - объект с полями IBuyer (можно передать не все поля)
+   * @throws {Error} Если data не является объектом
    */
-  setData(data: IBuyer): void {
+  setData(data: Partial<IBuyer>): void {
     if (!data || typeof data !== "object") {
       throw new Error("Не объект");
     }
 
-    // Проверяем обязательные строковые поля
-    if (!data.email) {
+    // Обновляем только переданные поля
+    this.data = {
+      ...this.data,
+      ...data
+    };
+
+    // Проверяем обязательные строковые поля (только если они были переданы)
+    if (data.email !== undefined && !data.email) {
       throw new Error("Email обязателен для заполнения");
     }
-    if (!data.phone) {
+    if (data.phone !== undefined && !data.phone) {
       throw new Error("Телефон обязателен для заполнения");
     }
-    if (!data.address) {
+    if (data.address !== undefined && !data.address) {
       throw new Error("Адрес обязателен для заполнения");
     }
 
-    // payment должен быть одним из допустимых значений TPayment
-    if (!['cash', 'card', 'not_selected'].includes(data.payment)) {
-      throw new Error("Недопустимое значение payment");
+    // Если передано поле payment — проверяем его допустимость
+    if (data.payment !== undefined) {
+      if (!['cash', 'card', 'not_selected'].includes(data.payment)) {
+        throw new Error("Недопустимое значение payment");
+      }
     }
-
-    this.data = data;
   }
 
   /**
