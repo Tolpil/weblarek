@@ -90,20 +90,38 @@ const submitOrder = async () => {
     const customerData = buyerModel.getData();
     const cartItems = cartModel.getItems();
 
+    // Формируем данные для отправки
     const orderData = {
       payment: customerData.payment as TPayment,
       email: customerData.email as string,
       phone: customerData.phone as string,
       address: customerData.address as string,
-      total: cartModel.getTotalPrice(),
+      total: cartModel.getTotalPrice(), // Локальная сумма для расчёта
       items: cartItems.map((item) => item.id),
     };
 
     console.log("Sending order:", orderData);
-    await apiService.submitOrder(orderData);
 
-    // Успешное оформление
-    showOrderSuccess(orderData.total);
+    // Отправляем заказ и получаем ответ сервера
+    const response = await apiService.submitOrder(orderData);
+
+    // Проверяем наличие итогового total в ответе
+    if (typeof response.total === 'number') {
+      // Логируем расхождение (для отладки)
+      if (cartModel.getTotalPrice() !== response.total) {
+        console.warn(
+          `Расхождение сумм: локальная=${cartModel.getTotalPrice()}, ` +
+          `серверная=${response.total}. Возможно, применены скидки или налоги.`
+        );
+      }
+
+      // Используем серверное значение
+      showOrderSuccess(response.total);
+    } else {
+      // Резервный вариант: используем локальное значение
+      console.warn("Сервер не вернул поле total. Используем локальное значение.");
+      showOrderSuccess(cartModel.getTotalPrice());
+    }
   } catch (error) {
     console.error("Ошибка оформления заказа:", error);
     contactsForm.errors = ["Ошибка оформления заказа. Попробуйте еще раз."];
